@@ -1,17 +1,99 @@
 import { Button, VerticalBox } from "std-widgets.slint";
 
+struct TileData {
+}
+
+export component Tile inherits Rectangle {
+    in property <bool> odd;
+    background: odd ? #ebecd0 : #779556;
+    in property <int> text;
+    Text {
+        color: #000000;
+        text: root.text;
+    }
+}
+
 export component AppWindow inherits Window {
-    in-out property<int> counter: 42;
-    callback request-increase-value();
-    VerticalBox {
-        Text {
-            text: "Counter: \{root.counter}";
-        }
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
-            }
-        }
-     }
+    private property <length> tile_size: 80px;
+    private property <int> columns: 8;
+    private property <int> rows: 8;
+    width: tile_size * columns;
+    height: tile_size * rows;
+
+    in property <[TileData]> tiles: [
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { }
+    ];
+    for tile[row_i] in tiles: Tile {
+        x: mod(row_i, columns) * tile_size;
+        y: floor(row_i / rows) * tile_size;
+        in property <bool> a: mod(row_i, 2) == 0;
+        in property <bool> b: (mod(floor(row_i / rows), 2) == 0);
+        odd: !((a && !b) || (!a && b));
+        text: floor(row_i / rows);
+        width: tile_size;
+        height: tile_size;
+    }
 }
