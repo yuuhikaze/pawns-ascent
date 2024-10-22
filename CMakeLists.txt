@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(pawns-ascend LANGUAGES CXX VERSION 0.2.0)
+project(pawns-ascent LANGUAGES CXX VERSION 0.2.0)
 
 find_package(Slint QUIET)
 if (NOT Slint_FOUND)
@@ -25,7 +25,7 @@ endif()
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin)
 
-set(CPACK_PACKAGE_NAME "Pawn's Ascend")
+set(CPACK_PACKAGE_NAME "Pawn's Ascent")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION "Yet another chess platform")
 set(CPACK_PACKAGE_CONTACT "yuuhikaze@protonmail.com")
