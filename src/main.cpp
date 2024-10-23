@@ -1,9 +1,9 @@
-#include "app-window.h"
+#include "Board.h"
+using namespace std;
 
-int main(int argc, char **argv)
-{
-    auto ui = AppWindow::create();
+int main() {
+    Board board;
+    board.display_board();
 
-    ui->run();
     return 0;
 }
