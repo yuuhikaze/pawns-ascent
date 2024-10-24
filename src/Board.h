@@ -1,11 +1,11 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include "pieces/Bishop.h"
-#include "pieces/King.h"
-#include "pieces/Pawn.h"
-#include "pieces/Queen.h"
-#include "pieces/Rook.h"
+#include "pieces/bishop.h"
+#include "pieces/king.h"
+#include "pieces/pawn.h"
+#include "pieces/queen.h"
+#include "pieces/rook.h"
 
 using namespace std;
 

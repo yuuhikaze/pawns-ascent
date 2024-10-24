@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class Board;
+
 class Piece {
   private:
     char symbol;
@@ -22,7 +24,7 @@ class Piece {
     }
     virtual ~Piece() {}
 
-    virtual bool is_movement_valid(int origin_x, int origin_y, int target_x, int target_y) const = 0;
+    virtual bool is_movement_valid(int origin_x, int origin_y, int target_x, int target_y, Board &board) const = 0;
 
     char getsymbol() const { return symbol; }
     bool getis_white() const { return is_white; }
