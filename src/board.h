@@ -17,11 +17,14 @@ class Board {
     Board() { initialize_board(); }
 
     void initialize_board() {
-        // Inicializar el tablero con punteros nulos (casillas vac�as)
+    
         board.resize(8, std::vector<Piece *>(8, nullptr));
 
-        // TODO: Colocar las piezas blancas en sus posiciones iniciales
+        for(int column = 0; column < 8; column++) {
+            board[column][0] = new Bishop(true);
+        }
     }
+
 
     void display_board() const {
         // Mostrar el encabezado del tablero (letra columna)
@@ -53,15 +56,33 @@ class Board {
         lo traduce a coordinates X y Y. */
         map<string, int> board_positions = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}, {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
         vector<int> coordinates;
+
+        if (board_positions.find(origin.substr(0, 1)) == board_positions.end()) {
+            cerr << "Invalid column letter in origin: " << origin << endl;
+            return {-1};
+        }
+
+        else{
         int origin_x = board_positions[origin.substr(0, 1)];
         int origin_y = stoi(origin.substr(1, 1)) - 1;
-        int target_x = board_positions[target.substr(0, 1)];
-        int target_y = stoi(target.substr(1, 1)) - 1;
-
+   
         coordinates.push_back(origin_x);
         coordinates.push_back(origin_y);
-        coordinates.push_back(target_x);
-        coordinates.push_back(target_y);
+  ;
+        }
+
+        if (board_positions.find(target.substr(0, 1)) == board_positions.end()) {
+            cerr << "Invalid column letter in target: " << target << endl;
+            return{-1};
+        }
+
+        else{
+            int target_x = board_positions[target.substr(0, 1)];
+            int target_y = stoi(target.substr(1, 1)) - 1;
+
+            coordinates.push_back(target_x);
+            coordinates.push_back(target_y);
+        }
 
         return coordinates; // coordinates = [origin_x, origin_y, target_x,
                             // target_y]
@@ -69,13 +90,48 @@ class Board {
 
     void move(string origin, string target) {
         vector<int> coordinates = map_position_to_coordinates(origin, target);
+        
+        for(auto i: coordinates) {
+            if(i < 0 || i > 7) {
+                //Testing message. Please remove later
+                cout << "Out of bounds. Please enter valid coordinates" << endl;
+                return;
+            }
+        }
+       
         int origin_x = coordinates[0];
         int origin_y = coordinates[1];
         int target_x = coordinates[2];
         int target_y = coordinates[3];
 
-        // TODO: Implementar la l�gica para mover una pieza en el tablero
+        if(board[origin_x][origin_y] != nullptr) {
+            bool is_valid = board[origin_x][origin_y]->is_movement_valid(origin_x, origin_y, target_x, target_y, board);
+
+            if(is_valid) {
+                board[target_x][target_y] = board[origin_x][origin_y];
+                board[origin_x][origin_y] = nullptr;
+            }
+
+            //Testing message. Please remove later
+            else cout << "Illegal move. Please make a valid move with the " << board[origin_x][origin_y]->getsymbol() << endl;
+        }
+
+        //Testing message. Please remove later
+        else cout << "Origin is empty. There must be a piece on the origin" << endl;
+
     }
+
+    void clear_board() {
+        //Deletes all alocated memory space and sets null pointers
+        for(int columns = 0; columns < 8; columns++) {
+            for(int rows = 0; rows < 8; rows++) {
+                delete board[columns][rows];
+                board[columns][rows] = nullptr;
+            }
+        }
+    }
+
+
 };
 
 // void test(Board &board) {

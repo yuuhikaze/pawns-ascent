@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-class Board;
+using namespace std;
 
 class Piece {
   private:
@@ -24,7 +24,14 @@ class Piece {
     }
     virtual ~Piece() {}
 
-    virtual bool is_movement_valid(int origin_x, int origin_y, int target_x, int target_y, Board &board) const = 0;
+    virtual bool is_movement_valid(int origin_x, int origin_y, int target_x, int target_y, const vector<vector<Piece *>> &board) const = 0;
+
+    std::vector<int> calc_displacement(int origin_x, int origin_y, int target_x, int target_y) const {
+      //Calculates the displacement of a given movement. Used for some movement logic
+      int delta_x = target_x - origin_x;
+      int delta_y = target_y - origin_y;
+      return {delta_x, delta_y};
+    }
 
     char getsymbol() const { return symbol; }
     bool getis_white() const { return is_white; }
