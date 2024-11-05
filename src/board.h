@@ -3,6 +3,7 @@
 
 #include "pieces/bishop.h"
 #include "pieces/king.h"
+#include "pieces/knight.h"
 #include "pieces/pawn.h"
 #include "pieces/queen.h"
 #include "pieces/rook.h"
@@ -20,9 +21,38 @@ class Board {
     
         board.resize(8, std::vector<Piece *>(8, nullptr));
 
+        board[0][7] = new Rook(false);
+        board[7][7] = new Rook(false);
+
+        board[1][7] = new Knight(false);
+        board[6][7] = new Knight(false);
+
+        board[2][7] = new Bishop(false);
+        board[5][7] = new Bishop(false);
+
+        board[3][7] = new Queen(false);
+        board[4][7] = new King (false);
+
         for(int column = 0; column < 8; column++) {
-            board[column][0] = new Bishop(true);
+            board[column][6] =  new Pawn(false);
         }
+
+        board[0][0] = new Rook(true);
+        board[7][0] = new Rook(true);
+
+        board[1][0] = new Knight(true);
+        board[6][0] = new Knight(true);
+
+        board[2][0] = new Bishop(true);
+        board[5][0] = new Bishop(true);
+
+        board[3][0] = new Queen(true);
+        board[4][0] = new King (true);
+
+        for(int column = 0; column < 8; column++) {
+            board[column][1] =  new Pawn(true);
+        }
+
     }
 
 
