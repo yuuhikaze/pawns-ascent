@@ -1,0 +1,105 @@
+import "../../static/fonts/MERIFONT.ttf";
+
+import { Button, VerticalBox } from "std-widgets.slint";
+
+struct TileData {
+    kind: string,
+}
+
+component Tile inherits Rectangle {
+    in property <bool> odd-tile;
+    in-out property <string> kind;
+    background: odd-tile ? #ebecd0 : #969696;
+    Text {
+        font-size: 64px;
+        font-family: "Chess Merida";
+        color: #000000;
+        text: kind;
+    }
+}
+
+export component ChessBoard {
+    private property <length> tile_size: 80px;
+    private property <int> columns: 8;
+    private property <int> rows: 8;
+
+    width: tile_size * columns;
+    height: tile_size * columns;
+
+    in property <[TileData]> tiles: [
+        { kind:"t" },
+        { kind:"m" },
+        { kind:"v" },
+        { kind:"w" },
+        { kind:"l" },
+        { kind:"v" },
+        { kind:"m" },
+        { kind:"t" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { kind:"o" },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"p" },
+        { kind:"r" },
+        { kind:"n" },
+        { kind:"b" },
+        { kind:"q" },
+        { kind:"k" },
+        { kind:"b" },
+        { kind:"n" },
+        { kind:"r" },
+    ];
+    for tile[row_i] in tiles: Tile {
+        x: mod(row_i, columns) * tile_size;
+        y: floor(row_i / rows) * tile_size;
+        private property <bool> a: mod(row_i, 2) == 0;
+        private property <bool> b: (mod(floor(row_i / rows), 2) == 0);
+        odd-tile: !((a && !b) || (!a && b));
+        width: tile_size;
+        height: tile_size;
+        kind: tile.kind;
+    }
+}
