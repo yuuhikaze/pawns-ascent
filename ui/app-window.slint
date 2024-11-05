@@ -1,7 +1,21 @@
 import { ChessBoard } from "components/board.slint";
+import { Banner } from "components/banner.slint";
 export component AppWindow inherits Window {
-    width: 640px;
-    height: 640px;
-    default-font-size: 24px;
-    ChessBoard { }
+    preferred-width: 640px;
+    preferred-height: 640px;
+    background: #3c3836;
+
+    VerticalLayout {
+        Banner {
+            player-name: "P1";
+            time-left: "10:00";
+        }
+
+        ChessBoard { }
+
+        Banner {
+            player-name: "P2";
+            time-left: "10:00";
+        }
+    }
 }
