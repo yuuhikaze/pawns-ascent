@@ -4,17 +4,45 @@ import { Button, VerticalBox } from "std-widgets.slint";
 
 struct TileData {
     kind: string,
+    environment: bool,
 }
 
 component Tile inherits Rectangle {
     in property <bool> tile-color;
     in-out property <string> kind;
+    in property <bool> environment;
+    private property <bool> active;
     background: tile-color ? #ebecd0 : #969696;
-    Text {
+
+    // TODO
+    // only one active tile at a time
+    // current player can select only his tiles
+    states [
+        active when active && !environment: {
+            state-area.opacity: 0.5;
+        }
+        hover when touch-area.has-hover && !environment: {
+            state-area.opacity: 0.5;
+        }
+    ]
+
+    state-area := Rectangle {
+        opacity: 0;
+        background: #000000;
+        animate opacity { duration: 150ms; }
+    }
+
+    kind-text := Text {
         font-size: 64px;
         font-family: "Chess Merida";
         color: #000000;
         text: kind;
+    }
+
+    touch-area := TouchArea {
+        clicked => {
+            active = !active;
+        }
     }
 }
 
@@ -47,10 +75,46 @@ export component ChessBoard {
             { kind:"o" },
             { kind:"o" }
         ],
-        [{ }, { }, { }, { }, { }, { }, { }, { }],
-        [{ }, { }, { }, { }, { }, { }, { }, { }],
-        [{ }, { }, { }, { }, { }, { }, { }, { }],
-        [{ }, { }, { }, { }, { }, { }, { }, { }],
+        [
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true }
+        ],
+        [
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true }
+        ],
+        [
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true }
+        ],
+        [
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true },
+            { environment: true }
+        ],
         [
             { kind:"p" },
             { kind:"p" },
@@ -72,7 +136,7 @@ export component ChessBoard {
             { kind:"r" }
         ]
     ];
-    for row[row_i] in tiles: TouchArea {
+    for row[row_i] in tiles: state-area := Rectangle {
         for column[col_i] in row: Tile {
             x: col_i * tile_size;
             y: row_i * tile_size;
@@ -80,6 +144,7 @@ export component ChessBoard {
             width: tile_size;
             height: tile_size;
             kind: column.kind;
+            environment: column.environment;
         }
     }
 }
