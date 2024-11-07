@@ -11,36 +11,33 @@
 using namespace std;
 
 class Board {
-private:
+  private:
     vector<vector<Piece *>> board;
-
-    coordinates w_king;
-    coordinates b_king;
 
     vector<int> map_position_to_coordinates(string origin, string target) {
         map<string, int> board_positions = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}, {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
         vector<int> coordinates;
 
+        // checks for valid position
         if (board_positions.find(origin.substr(0, 1)) == board_positions.end()) {
             cerr << "Invalid column letter in origin: " << origin << endl;
             return {-1};
         }
 
-        else{
-        int origin_x = board_positions[origin.substr(0, 1)];
-        int origin_y = stoi(origin.substr(1, 1)) - 1;
-   
-        coordinates.push_back(origin_x);
-        coordinates.push_back(origin_y);
+        else {
+            int origin_x = board_positions[origin.substr(0, 1)];
+            int origin_y = stoi(origin.substr(1, 1)) - 1;
 
+            coordinates.push_back(origin_x);
+            coordinates.push_back(origin_y);
         }
 
         if (board_positions.find(target.substr(0, 1)) == board_positions.end()) {
             cerr << "Invalid column letter in target: " << target << endl;
-            return{-1};
+            return {-1};
         }
 
-        else{
+        else {
             int target_x = board_positions[target.substr(0, 1)];
             int target_y = stoi(target.substr(1, 1)) - 1;
 
@@ -56,8 +53,8 @@ private:
         int menu;
         bool is_white = board[target.x][target.y]->getis_white();
         delete board[target.x][target.y];
-        board[target.x][target.y] =  nullptr;
-        
+        board[target.x][target.y] = nullptr;
+
         cout << "Your pawn can promote! Choose and option: " << endl;
         do {
 
@@ -65,29 +62,32 @@ private:
                  << "2.) Rook" << endl
                  << "3.) Bishop" << endl
                  << "4.) Knight" << endl;
-            
+
             cin >> menu;
-            
-            if(menu == 1) board[target.x][target.y] = new Queen(is_white);
 
-            else if(menu == 2) board[target.x][target.y] = new Rook(is_white);
+            if (menu == 1)
+                board[target.x][target.y] = new Queen(is_white);
 
-            else if(menu == 3) board[target.x][target.y] = new Bishop(is_white);
+            else if (menu == 2)
+                board[target.x][target.y] = new Rook(is_white);
 
-            else if(menu == 4) board[target.x][target.y] = new Knight(is_white);
+            else if (menu == 3)
+                board[target.x][target.y] = new Bishop(is_white);
 
-            else cout << "Invalid option. Please select a valid option" << endl;
-            
-        } while(menu < 1 || menu > 4);
-         
+            else if (menu == 4)
+                board[target.x][target.y] = new Knight(is_white);
 
+            else
+                cout << "Invalid option. Please select a valid option" << endl;
+
+        } while (menu < 1 || menu > 4);
     }
 
-public:
+  public:
     Board() { initialize_board(); }
 
     void initialize_board() {
-    
+
         board.resize(8, vector<Piece *>(8, nullptr));
 
         // board[0][7] = new Rook(false);
@@ -116,18 +116,18 @@ public:
         board[5][0] = new Bishop(true);
 
         board[3][0] = new Queen(true);
-        board[4][0] = new King (true);
+        board[4][0] = new King(true);
 
-        for(int column = 0; column < 8; column++) {
-            board[column][5] =  new Pawn(true);
+        for (int column = 0; column < 8; column++) {
+            board[column][5] = new Pawn(true);
         }
-
     }
-
 
     void display_board() const {
         // Mostrar el encabezado del tablero (letra columna)
-        cout << endl << "\ta b c d e f g h" << endl << endl;
+        cout << endl
+             << "\ta b c d e f g h" << endl
+             << endl;
 
         for (int row = 7; row >= 0; row--) {
             cout << row + 1 << "\t"; // Numero de fila
@@ -147,15 +147,18 @@ public:
         }
 
         // Mostrar el encabezado del tablero (letra columna)
-        cout << endl << "\ta b c d e f g h" << endl << endl;
+        cout << endl
+             << "\ta b c d e f g h" << endl
+             << endl;
     }
 
     void move(string origin_string, string target_string) {
-        vector<int> move = map_position_to_coordinates(origin_string, target_string);
-        
-        for(auto i: move) {
-            if(i < 0 || i > 7) {
-                //Testing message. Please remove later
+        vector<int> move =
+            map_position_to_coordinates(origin_string, target_string);
+
+        for (auto i : move) {
+            if (i < 0 || i > 7) {
+                // Testing message. Please remove later
                 cout << "Out of bounds. Please enter valid coordinates" << endl;
                 return;
             }
@@ -164,35 +167,37 @@ public:
         coordinates origin(move[0], move[1]);
         coordinates target(move[2], move[3]);
 
+        if (board[origin.x][origin.y] != nullptr) {
+            bool is_valid =
+                board[origin.x][origin.y]->is_movement_valid(origin, target, board);
 
-        if(board[origin.x][origin.y] != nullptr) {
-            bool is_valid = board[origin.x][origin.y]->is_movement_valid(origin, target, board);
-
-            if(is_valid) {
+            if (is_valid) {
                 board[target.x][target.y] = board[origin.x][origin.y];
                 board[origin.x][origin.y] = nullptr;
 
-                if(target.y == 7 && dynamic_cast<Pawn*>(board[target.x][target.y])) promote(target);
+                if (target.y == 7 && dynamic_cast<Pawn *>(board[target.x][target.y]))
+                    promote(target);
             }
 
-            //Testing message. Please remove later
-            else cout << "Illegal move. Please make a valid move with the " << board[origin.x][origin.y]->getsymbol() << endl;
+            // Testing message. Please remove later
+            else
+                cout << "Illegal move. Please make a valid move with the "
+                     << board[origin.x][origin.y]->getsymbol() << endl;
         }
 
-        //Testing message. Please remove later
-        else cout << "Origin is empty. There must be a piece on the origin" << endl;
-
+        // Testing message. Please remove later
+        else
+            cout << "Origin is empty. There must be a piece on the origin" << endl;
     }
 
     void clear_board() {
-        //Deletes all allocated memory space and sets null pointers
-        for(int columns = 0; columns < 8; columns++) {
-            for(int rows = 0; rows < 8; rows++) {
+        // Deletes all allocated memory space and sets null pointers
+        for (int columns = 0; columns < 8; columns++) {
+            for (int rows = 0; rows < 8; rows++) {
                 delete board[columns][rows];
                 board[columns][rows] = nullptr;
             }
         }
-
     }
 };
 
@@ -227,6 +232,5 @@ public:
 //     board.move("f1", "a6");
 //     board.display_board();
 // }
-
 
 #endif // BOARD_H

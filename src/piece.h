@@ -8,7 +8,7 @@
 
 using namespace std;
 
-struct coordinates {   
+struct coordinates {
     coordinates(int x, int y) {
         this->x = x;
         this->y = y;
@@ -19,11 +19,11 @@ struct coordinates {
 };
 
 class Piece {
-private:
+  private:
     char symbol;
     bool is_white;
 
-public:
+  public:
     Piece(char symbol, bool is_white) {
         this->is_white = is_white;
 
@@ -34,10 +34,13 @@ public:
     }
     virtual ~Piece() {}
 
-    virtual bool is_movement_valid(coordinates origin, coordinates target, const vector<vector<Piece *>> &board) = 0;
+    virtual bool is_movement_valid(coordinates origin, coordinates target,
+                                   const vector<vector<Piece *>> &board) = 0;
 
-    std::vector<int> calc_displacement(coordinates origin, coordinates target) const {
-        //Calculates the displacement of a given movement. Used for some movement logic
+    std::vector<int> calc_displacement(coordinates origin,
+                                       coordinates target) const {
+        // Calculates the displacement of a given movement. Used for some movement
+        // logic
         int delta_x = target.x - origin.x;
         int delta_y = target.y - origin.y;
         return {delta_x, delta_y};
@@ -47,5 +50,4 @@ public:
     bool getis_white() const { return is_white; }
 };
 
-
-#endif //PIECE.H
+#endif // PIECE.H
