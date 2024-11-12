@@ -8,8 +8,7 @@ class Pawn : public Piece {
   public:
     Pawn(bool is_white) : Piece('p', is_white) { has_moved = false; }
 
-    bool is_movement_valid(coordinates origin, coordinates target,
-                           const vector<vector<Piece *>> &board) override {
+    bool is_movement_valid(coordinates origin, coordinates target, const vector<vector<Piece *>> &board) override {
 
         vector<int> displacement = calc_displacement(origin, target);
         int delta_x = displacement[0];
@@ -37,7 +36,10 @@ class Pawn : public Piece {
             if (abs(delta_y) == 1) {
                 if (board[origin.x][origin.y + step] != nullptr)
                     return false;
-                return true;
+                else {
+                    has_moved = true;
+                    return true;
+                }
             }
 
             return false;
@@ -48,14 +50,72 @@ class Pawn : public Piece {
                 return false;
             if (board[target.x][target.y]->getis_white() == getis_white())
                 return false;
-            if (target.y == 7) {
+            else {
+                    has_moved = true;
+                    return true;
             }
-            return true;
-
         }
 
         else
             return false;
+    }
+
+    vector<coordinates> getmoves(coordinates origin, const vector<vector<Piece *>> &board) override {
+        vector<coordinates> moves;
+
+        if(getis_white()) {
+            if(origin.y < 7) {
+                if(board[origin.x][origin.y + 1] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y + 1));
+            }
+            
+            if(origin.y < 6) {
+                if(!has_moved && board[origin.x][origin.y + 2] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y + 2));
+            }
+
+            if(origin.x < 7) {
+                if(board[origin.x + 1][origin.y + 1] != nullptr) {
+                    if(board[origin.x + 1][origin.y + 1]->getis_white() != getis_white())
+                        moves.push_back(coordinates(origin.x + 1, origin.y + 1));
+                }
+            }
+
+            if(origin.x > 0) {
+                if(board[origin.x - 1][origin.y + 1] != nullptr) {
+                    if(board[origin.x - 1][origin.y + 1]->getis_white() != getis_white())
+                        moves.push_back(coordinates(origin.x - 1, origin.y + 1));
+                }
+            }
+        }
+
+        else {
+            if(origin.y > 0) {
+                if(board[origin.x][origin.y - 1] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y + 1));
+            }
+            
+            if(origin.y > 1) {
+                if(!has_moved && board[origin.x][origin.y - 2] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y + 2));
+            }
+
+            if(origin.x < 7) {
+                if(board[origin.x + 1][origin.y - 1] != nullptr) {
+                    if(board[origin.x + 1][origin.y - 1]->getis_white() != getis_white())
+                        moves.push_back(coordinates(origin.x + 1, origin.y - 1));
+                }
+            }
+
+            if(origin.x > 0) {
+                if(board[origin.x - 1][origin.y - 1] != nullptr) {
+                    if(board[origin.x - 1][origin.y - 1]->getis_white() != getis_white())
+                        moves.push_back(coordinates(origin.x - 1, origin.y - 1));
+                }
+            }
+        }
+        
+        return moves;
     }
 
   private:

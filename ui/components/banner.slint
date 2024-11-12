@@ -1,0 +1,22 @@
+export component Banner {
+    in property <string> player-name;
+    in-out property <string> time-left;
+    HorizontalLayout {
+        Rectangle {
+            Text {
+                text: player-name;
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 2;
+        }
+
+        Rectangle {
+            background: #282828;
+            Text {
+                text: time-left;
+            }
+        }
+    }
+}

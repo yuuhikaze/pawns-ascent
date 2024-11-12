@@ -14,7 +14,7 @@ class Board {
   private:
     vector<vector<Piece *>> board;
 
-    vector<int> map_position_to_coordinates(string origin, string target) {
+    vector<int> map_position_to_coordinates(const string &origin, const string &target) const {
         map<string, int> board_positions = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}, {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
         vector<int> coordinates;
 
@@ -24,32 +24,28 @@ class Board {
             return {-1};
         }
 
-        else {
-            int origin_x = board_positions[origin.substr(0, 1)];
-            int origin_y = stoi(origin.substr(1, 1)) - 1;
-
-            coordinates.push_back(origin_x);
-            coordinates.push_back(origin_y);
-        }
-
         if (board_positions.find(target.substr(0, 1)) == board_positions.end()) {
             cerr << "Invalid column letter in target: " << target << endl;
             return {-1};
         }
+        
+        int origin_x = board_positions[origin.substr(0, 1)];
+        int origin_y = stoi(origin.substr(1, 1)) - 1;
 
-        else {
-            int target_x = board_positions[target.substr(0, 1)];
-            int target_y = stoi(target.substr(1, 1)) - 1;
+        coordinates.push_back(origin_x);
+        coordinates.push_back(origin_y);
 
-            coordinates.push_back(target_x);
-            coordinates.push_back(target_y);
-        }
+        int target_x = board_positions[target.substr(0, 1)];
+        int target_y = stoi(target.substr(1, 1)) - 1;
+
+        coordinates.push_back(target_x);
+        coordinates.push_back(target_y);
 
         return coordinates; // coordinates = [origin_x, origin_y, target_x,
                             // target_y]
     }
 
-    void promote(coordinates target) {
+    void promote(const coordinates &target) {
         int menu;
         bool is_white = board[target.x][target.y]->getis_white();
         delete board[target.x][target.y];
@@ -83,6 +79,7 @@ class Board {
         } while (menu < 1 || menu > 4);
     }
 
+
   public:
     Board() { initialize_board(); }
 
@@ -91,36 +88,36 @@ class Board {
         board.resize(8, vector<Piece *>(8, nullptr));
 
         // board[0][7] = new Rook(false);
-        // board[7][7] = new Rook(false);
+        board[7][7] = new Rook(false);
 
-        // board[1][7] = new Knight(false);
+        board[1][7] = new Knight(false);
         // board[6][7] = new Knight(false);
 
         // board[2][7] = new Bishop(false);
-        // board[5][7] = new Bishop(false);
+        board[5][7] = new Bishop(false);
 
-        // board[3][7] = new Queen(false);
-        // board[4][7] = new King (false);
+        board[3][7] = new Queen(false);
+        board[4][7] = new King (false);
 
-        // for(int column = 0; column < 8; column++) {
-        //     board[column][6] =  new Pawn(false);
+        // for(int column = 0; column < 8; column+=3) {
+        //     board[column][3] =  new Pawn(false);
         // }
 
         board[0][0] = new Rook(true);
-        board[7][0] = new Rook(true);
+        // board[7][0] = new Rook(true);
 
-        board[1][0] = new Knight(true);
-        board[6][0] = new Knight(true);
+        // board[1][0] = new Knight(true);
+        // board[6][0] = new Knight(true);
 
-        board[2][0] = new Bishop(true);
-        board[5][0] = new Bishop(true);
+        // board[2][0] = new Bishop(true);
+        // board[5][0] = new Bishop(true);
 
-        board[3][0] = new Queen(true);
+        // board[3][0] = new Queen(true);
         board[4][0] = new King(true);
 
-        for (int column = 0; column < 8; column++) {
-            board[column][5] = new Pawn(true);
-        }
+        // for (int column = 0; column < 8; column++) {
+        //     board[column][1] = new Pawn(true);
+        // }
     }
 
     void display_board() const {
@@ -152,9 +149,13 @@ class Board {
              << endl;
     }
 
-    void move(string origin_string, string target_string) {
-        vector<int> move =
-            map_position_to_coordinates(origin_string, target_string);
+    void move(const string &origin_string, const string &target_string) {
+        if(origin_string == target_string) {
+            cout << "Same origin and target" << endl;
+            return;
+        }
+        
+        vector<int> move = map_position_to_coordinates(origin_string, target_string);
 
         for (auto i : move) {
             if (i < 0 || i > 7) {
@@ -168,12 +169,19 @@ class Board {
         coordinates target(move[2], move[3]);
 
         if (board[origin.x][origin.y] != nullptr) {
-            bool is_valid =
-                board[origin.x][origin.y]->is_movement_valid(origin, target, board);
+            bool is_valid = board[origin.x][origin.y]->is_movement_valid(origin, target, board);
 
             if (is_valid) {
                 board[target.x][target.y] = board[origin.x][origin.y];
                 board[origin.x][origin.y] = nullptr;
+
+                cout << "Possible moves: " << endl;
+
+                vector<coordinates> moves = board[target.x][target.y]->getmoves(target, board);
+
+                for(auto i: moves) {
+                    cout << "x: " << i.x << "  y: " << i.y << endl;
+                }
 
                 if (target.y == 7 && dynamic_cast<Pawn *>(board[target.x][target.y]))
                     promote(target);
@@ -199,6 +207,7 @@ class Board {
             }
         }
     }
+
 };
 
 //     void test(Board &board) {

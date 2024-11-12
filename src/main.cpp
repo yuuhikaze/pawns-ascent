@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
     board.clear_board();
 
     // auto ui = AppWindow::create();
+    // ui->window().set_maximized(true)
     // ui->run();
 
     return 0;
