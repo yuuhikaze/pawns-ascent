@@ -6,8 +6,17 @@ void test_moves(int n, Board &board) {
 
     string origin;
     string target;
+    bool turn = true;
 
-    for (int i = 0; i < n; i++) {
+    cout << "Current turn: ";
+    if (turn)
+        cout << "White " << endl;
+    else
+        cout << "Black " << endl;
+    board.display_board();
+
+    int i = 0;
+    while (i < n) {
         cout << "origin: ";
         cin >> origin;
         cout << endl;
@@ -16,8 +25,16 @@ void test_moves(int n, Board &board) {
         cin >> target;
         cout << endl;
 
-        board.move(origin, target);
-
+        if (board.move(origin, target, turn)) {
+            turn = !turn;
+            i++;
+        }
+        cout << "Current turn: ";
+        if (turn)
+            cout << "White " << endl;
+        else
+            cout << "Black " << endl;
+        
         board.display_board();
     }
 }
@@ -25,9 +42,7 @@ void test_moves(int n, Board &board) {
 int main(int argc, char **argv) {
     Board board;
 
-    board.display_board();
-
-    test_moves(10, board);
+    test_moves(20, board);
 
     board.clear_board();
 

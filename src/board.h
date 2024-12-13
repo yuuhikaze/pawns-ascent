@@ -7,78 +7,11 @@
 #include "pieces/pawn.h"
 #include "pieces/queen.h"
 #include "pieces/rook.h"
+#include "game_state.h"
 
 using namespace std;
 
 class Board {
-  private:
-    vector<vector<Piece *>> board;
-
-    vector<int> map_position_to_coordinates(const string &origin, const string &target) const {
-        map<string, int> board_positions = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}, {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
-        vector<int> coordinates;
-
-        // checks for valid position
-        if (board_positions.find(origin.substr(0, 1)) == board_positions.end()) {
-            cerr << "Invalid column letter in origin: " << origin << endl;
-            return {-1};
-        }
-
-        if (board_positions.find(target.substr(0, 1)) == board_positions.end()) {
-            cerr << "Invalid column letter in target: " << target << endl;
-            return {-1};
-        }
-        
-        int origin_x = board_positions[origin.substr(0, 1)];
-        int origin_y = stoi(origin.substr(1, 1)) - 1;
-
-        coordinates.push_back(origin_x);
-        coordinates.push_back(origin_y);
-
-        int target_x = board_positions[target.substr(0, 1)];
-        int target_y = stoi(target.substr(1, 1)) - 1;
-
-        coordinates.push_back(target_x);
-        coordinates.push_back(target_y);
-
-        return coordinates; // coordinates = [origin_x, origin_y, target_x,
-                            // target_y]
-    }
-
-    void promote(const coordinates &target) {
-        int menu;
-        bool is_white = board[target.x][target.y]->getis_white();
-        delete board[target.x][target.y];
-        board[target.x][target.y] = nullptr;
-
-        cout << "Your pawn can promote! Choose and option: " << endl;
-        do {
-
-            cout << "1.) Queen" << endl
-                 << "2.) Rook" << endl
-                 << "3.) Bishop" << endl
-                 << "4.) Knight" << endl;
-
-            cin >> menu;
-
-            if (menu == 1)
-                board[target.x][target.y] = new Queen(is_white);
-
-            else if (menu == 2)
-                board[target.x][target.y] = new Rook(is_white);
-
-            else if (menu == 3)
-                board[target.x][target.y] = new Bishop(is_white);
-
-            else if (menu == 4)
-                board[target.x][target.y] = new Knight(is_white);
-
-            else
-                cout << "Invalid option. Please select a valid option" << endl;
-
-        } while (menu < 1 || menu > 4);
-    }
-
 
   public:
     Board() { initialize_board(); }
@@ -87,33 +20,35 @@ class Board {
 
         board.resize(8, vector<Piece *>(8, nullptr));
 
-        // board[0][7] = new Rook(false);
+        board[0][7] = new Rook(false);
         board[7][7] = new Rook(false);
 
-        board[1][7] = new Knight(false);
+        // board[1][7] = new Knight(false);
         // board[6][7] = new Knight(false);
 
-        // board[2][7] = new Bishop(false);
+        board[2][7] = new Bishop(false);
         board[5][7] = new Bishop(false);
 
         board[3][7] = new Queen(false);
         board[4][7] = new King (false);
+        GameState::black_king = coordinates(4, 7);
 
-        // for(int column = 0; column < 8; column+=3) {
-        //     board[column][3] =  new Pawn(false);
+        // for(int column = 0; column < 8; column++) {
+        //     board[column][6] =  new Pawn(false);
         // }
 
         board[0][0] = new Rook(true);
-        // board[7][0] = new Rook(true);
+        board[7][0] = new Rook(true);
 
         // board[1][0] = new Knight(true);
         // board[6][0] = new Knight(true);
 
-        // board[2][0] = new Bishop(true);
-        // board[5][0] = new Bishop(true);
+        board[2][0] = new Bishop(true);
+        board[5][0] = new Bishop(true);
 
-        // board[3][0] = new Queen(true);
+        board[3][0] = new Queen(true);
         board[4][0] = new King(true);
+        GameState::white_king = coordinates(4, 0);
 
         // for (int column = 0; column < 8; column++) {
         //     board[column][1] = new Pawn(true);
@@ -149,10 +84,10 @@ class Board {
              << endl;
     }
 
-    void move(const string &origin_string, const string &target_string) {
-        if(origin_string == target_string) {
+    bool move(const string &origin_string, const string &target_string, const bool &is_white_turn) {
+        if (origin_string == target_string) {
             cout << "Same origin and target" << endl;
-            return;
+            return false;
         }
         
         vector<int> move = map_position_to_coordinates(origin_string, target_string);
@@ -161,41 +96,79 @@ class Board {
             if (i < 0 || i > 7) {
                 // Testing message. Please remove later
                 cout << "Out of bounds. Please enter valid coordinates" << endl;
-                return;
+                return false;
             }
         }
 
         coordinates origin(move[0], move[1]);
         coordinates target(move[2], move[3]);
 
-        if (board[origin.x][origin.y] != nullptr) {
-            bool is_valid = board[origin.x][origin.y]->is_movement_valid(origin, target, board);
-
-            if (is_valid) {
-                board[target.x][target.y] = board[origin.x][origin.y];
-                board[origin.x][origin.y] = nullptr;
-
-                cout << "Possible moves: " << endl;
-
-                vector<coordinates> moves = board[target.x][target.y]->getmoves(target, board);
-
-                for(auto i: moves) {
-                    cout << "x: " << i.x << "  y: " << i.y << endl;
-                }
-
-                if (target.y == 7 && dynamic_cast<Pawn *>(board[target.x][target.y]))
-                    promote(target);
-            }
-
+        if (board[origin.x][origin.y] == nullptr) {
             // Testing message. Please remove later
-            else
-                cout << "Illegal move. Please make a valid move with the "
-                     << board[origin.x][origin.y]->getsymbol() << endl;
+            cout << "Origin is empty. There must be a piece on the origin" << endl;
+            return false;
         }
 
-        // Testing message. Please remove later
-        else
-            cout << "Origin is empty. There must be a piece on the origin" << endl;
+        if (board[origin.x][origin.y]->getis_white() != is_white_turn) {
+            // Testing message. Please remove later
+            cout << "Please move the correct color piece" << endl;
+            return false;
+        }
+
+        if (board[origin.x][origin.y]->is_movement_valid(origin, target, board)) {            
+            
+            Piece* temp = board[target.x][target.y];
+            board[target.x][target.y] = board[origin.x][origin.y];
+            board[origin.x][origin.y] = nullptr;
+
+            bool is_checked;
+            if (is_white_turn)
+                is_checked = board[GameState::white_king.x][GameState::white_king.y]->is_checked(GameState::white_king, board);
+            else
+                is_checked = board[GameState::black_king.x][GameState::black_king.y]->is_checked(GameState::black_king, board);
+            
+            if (is_checked) { 
+                board[origin.x][origin.y] = board[target.x][target.y];
+                board[target.x][target.y] = temp;
+                // Testing message. Please remove later
+                cout << "That move puts you into check (dickhead)" << endl;
+                return false; 
+            }
+
+            else if (temp != nullptr) {
+                delete temp;
+                temp = nullptr;
+            }
+
+            // cout << "Possible moves: " << endl;
+
+            // vector<coordinates> moves = board[target.x][target.y]->getmoves(target, board);
+
+            // for(auto i: moves) {
+                    //     cout << "x: " << i.x << "  y: " << i.y << endl;
+            // }
+
+            if (GameState::will_promote) {
+                promote(target);
+                GameState::will_promote = false;
+            }
+
+            else if(GameState::will_en_passant) {
+                delete board[GameState::en_passant_target.x][GameState::en_passant_target.y];
+                board[GameState::en_passant_target.x][GameState::en_passant_target.y] = nullptr;
+                GameState::en_passant_target = coordinates(-1, -1);
+                GameState::en_passant_capture = coordinates(-1, -1);
+                GameState::will_en_passant = false;
+            }
+
+            return true;
+        }
+
+        else {
+            // Testing message. Please remove later
+            cout << "Illegal move. Please make a valid move with the " << board[origin.x][origin.y]->getsymbol() << endl;
+            return false;
+        }
     }
 
     void clear_board() {
@@ -206,6 +179,73 @@ class Board {
                 board[columns][rows] = nullptr;
             }
         }
+    }
+
+  private:
+    vector<vector<Piece *>> board;
+
+    vector<int> map_position_to_coordinates(const string &origin, const string &target) const {
+        map<string, int> board_positions = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}, {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
+        vector<int> coordinates;
+
+        // checks for valid position
+        if (board_positions.find(origin.substr(0, 1)) == board_positions.end()) {
+            cerr << "Invalid column letter in origin: " << origin << endl;
+            return {-1};
+        }  
+
+        if (board_positions.find(target.substr(0, 1)) == board_positions.end()) {
+            cerr << "Invalid column letter in target: " << target << endl;
+            return {-1};
+        }
+        
+        int origin_x = board_positions[origin.substr(0, 1)];
+        int origin_y = stoi(origin.substr(1, 1)) - 1;
+
+        coordinates.push_back(origin_x);
+        coordinates.push_back(origin_y);
+
+        int target_x = board_positions[target.substr(0, 1)];
+        int target_y = stoi(target.substr(1, 1)) - 1;
+
+        coordinates.push_back(target_x);
+        coordinates.push_back(target_y);
+
+        return coordinates; // coordinates = [origin_x, origin_y, target_x,
+                            // target_y]
+    }
+
+    void promote(const coordinates &target) {
+        int menu;
+        bool is_white = board[target.x][target.y]->getis_white();
+        delete board[target.x][target.y];
+        board[target.x][target.y] = nullptr;
+
+        cout << "Your pawn can promote! Choose and option: " << endl;
+        do {
+            cout << "1.) Queen" << endl
+                 << "2.) Rook" << endl
+                 << "3.) Bishop" << endl
+                 << "4.) Knight" << endl;
+
+            cin >> menu;
+
+            if (menu == 1)
+                board[target.x][target.y] = new Queen(is_white);
+
+            else if (menu == 2)
+                board[target.x][target.y] = new Rook(is_white);
+
+            else if (menu == 3)
+                board[target.x][target.y] = new Bishop(is_white);
+
+            else if (menu == 4)
+                board[target.x][target.y] = new Knight(is_white);
+
+            else
+                cout << "Invalid option. Please select a valid option" << endl;
+
+        } while (menu < 1 || menu > 4);
     }
 
 };

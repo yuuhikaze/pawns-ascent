@@ -29,6 +29,8 @@ class Pawn : public Piece {
                     return false;
                 else {
                     has_moved = true;
+                    GameState::en_passant_capture = coordinates(origin.x, origin.y + step);
+                    GameState::en_passant_target = coordinates(target.x, target.y);
                     return true;
                 }
             }
@@ -37,22 +39,36 @@ class Pawn : public Piece {
                 if (board[origin.x][origin.y + step] != nullptr)
                     return false;
                 else {
-                    has_moved = true;
+                    if(!has_moved)
+                        has_moved = true;
+                    set_default_en_passant();
+                    if(target.y == 7 || target.y == 0)
+                        GameState::will_promote = true;
                     return true;
                 }
             }
 
-            return false;
+            else {
+                return false;
+            }
         }
 
         if (abs(delta_y) == 1 && abs(delta_x) == 1) {
+            if(target == GameState::en_passant_capture) {
+                GameState::will_en_passant = true;
+                return true;
+            }
             if (board[target.x][target.y] == nullptr)
                 return false;
             if (board[target.x][target.y]->getis_white() == getis_white())
                 return false;
             else {
+                if(!has_moved)    
                     has_moved = true;
-                    return true;
+                set_default_en_passant();
+                if(target.y == 7 || target.y == 0)
+                    GameState::will_promote = true;
+                return true;
             }
         }
 

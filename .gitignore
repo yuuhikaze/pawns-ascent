@@ -2,4 +2,6 @@ build/
 packages/
 .vscode/
 src/main.exe
+src/to_do_list.txt
+
 

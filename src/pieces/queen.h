@@ -32,8 +32,10 @@ class Queen : public Piece {
                 j += step_y;
             }
 
-            if(is_valid_tile(target, board)) 
+            if(is_valid_tile(target, board)) {
+                set_default_en_passant();
                 return true;
+            }
 
             else {
                 // Testing message. Please remove later
@@ -55,8 +57,10 @@ class Queen : public Piece {
                     i += step_x;
                 }
 
-                if(is_valid_tile(target, board)) 
+                if(is_valid_tile(target, board)) {
+                    set_default_en_passant();
                     return true;
+                }
 
                 else {
                     // Testing message. Please remove later
@@ -77,16 +81,16 @@ class Queen : public Piece {
                     j += step_y;
                 }
 
-                if(is_valid_tile(target, board)) 
+                if(is_valid_tile(target, board)) {
+                    set_default_en_passant();
                     return true;
+                }
 
                 else {
                     // Testing message. Please remove later
                     cout << "There is a piece blocking the way" << endl;
                     return false;
                 }
-
-                return true;
             }
         }
         return false;

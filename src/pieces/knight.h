@@ -19,8 +19,10 @@ class Knight : public Piece {
             return false;
         }
 
-        if (is_valid_tile(target, board))
+        if (is_valid_tile(target, board)) {
+            set_default_en_passant();
             return true;
+        }
 
          else {
             // Testing message. Please remove later

@@ -34,9 +34,15 @@ class King : public Piece {
             return false;
         }
         
-        return true;
+        else {
+            set_default_en_passant();
+            if(getis_white())
+                GameState::white_king = target;
+            else
+                GameState::black_king = target;
+            return true;
+        }
     }
-
 
     vector<coordinates> getmoves(coordinates origin, const vector<vector<Piece *>> &board) override {
         vector<coordinates> moves;
@@ -68,140 +74,6 @@ class King : public Piece {
         }
         
         return moves;
-    }
-
-    bool is_checked(const coordinates &target, const vector<vector<Piece *>> &board) {
-        
-        if(is_checked_diagonal(target, true, true, board))
-            return true;
-        
-        if(is_checked_diagonal(target, true, false, board))
-            return true;
-        
-        if(is_checked_diagonal(target, false, false, board))
-            return true;
-        
-        if(is_checked_diagonal(target, false, true, board))
-            return true;
-
-        if(is_checked_horizontal(target, true, board))
-            return true;
-        
-        if(is_checked_horizontal(target, false, board))
-            return true;
-        
-        if(is_checked_vertical(target, true, board))
-            return true;
-
-        if(is_checked_vertical(target, false, board))
-            return true;
-        
-        if(is_checked_L(target, board))
-            return true;
-        
-        return false;
-    }
-
-  private:
-    bool is_checked_diagonal(coordinates origin, bool direction_x, bool direction_y, const vector<vector<Piece *>> &board) const {
-        int step_x = direction_x ? 1 : -1;
-        int step_y = direction_y ? 1 : -1;
-
-        if(origin.x + step_x < 8 && origin.x + step_x > -1 && origin.y + step_y < 8 && origin.y + step_y > -1) {
-            if(dynamic_cast<King *>(board[origin.x + step_x][origin.y + step_y]))
-                if(board[origin.x + step_x][origin.y + step_y]->getis_white() == getis_white()) {
-                    origin.x += step_x;
-                    origin.y += step_y;
-            }
-        }
-
-        vector<coordinates> moves = getdiagonal_moves(origin, direction_x, direction_y, board);
-        if(moves.empty())
-            return false;
-
-        coordinates position = moves.back();
-        if(dynamic_cast<Bishop *>(board[position.x][position.y]) || dynamic_cast<Queen *>(board[position.x][position.y]))
-            return true;
-        
-        if(moves.size() == 1) {
-            if(dynamic_cast<King *>(board[position.x][position.y]))
-                return true;
-            
-            if(getis_white()) {
-                if(direction_y && dynamic_cast<Pawn *>(board[position.x][position.y]))
-                    return true;
-            }
-
-            else {
-                if(!direction_y && dynamic_cast<Pawn *>(board[position.x][position.y]))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool is_checked_horizontal(coordinates origin, bool direction_x, const vector<vector<Piece *>> &board) const {
-        int step_x = direction_x ? 1 : -1;
-
-        if(origin.x + step_x > -1 && origin.x + step_x < 8) {
-            if(dynamic_cast<King *>(board[origin.x + step_x][origin.y]))
-                if(board[origin.x + step_x][origin.y]->getis_white() == getis_white())
-                    origin.x += step_x;
-        }
-
-        vector<coordinates> moves = gethorizontal_moves(origin, direction_x, board);
-        if(moves.empty())
-            return false;
-
-        coordinates position = moves.back();
-        if(dynamic_cast<Rook *>(board[position.x][position.y]) || dynamic_cast<Queen *>(board[position.x][position.y]))
-            return true;
-        
-        if(moves.size() == 1) {
-            if(dynamic_cast<King *>(board[position.x][position.y]))
-                return true;
-        }
-
-        return false;
-    }
-
-    bool is_checked_vertical(coordinates origin, bool direction_y, const vector<vector<Piece *>> &board) const {
-        int step_y = direction_y ? 1 : -1;
-
-        if(origin.y + step_y > -1 && origin.y + step_y < 8) {
-            if(dynamic_cast<King *>(board[origin.x][origin.y + step_y]))
-                if(board[origin.x][origin.y + step_y]->getis_white() == getis_white())
-                origin.y += step_y;
-        }
-
-        vector<coordinates> moves = getvertical_moves(origin, direction_y, board);
-        if(moves.empty())
-            return false;
-
-        coordinates position = moves.back();
-        if(dynamic_cast<Rook *>(board[position.x][position.y]) || dynamic_cast<Queen *>(board[position.x][position.y]))
-            return true;
-        
-        if(moves.size() == 1) {
-            if(dynamic_cast<King *>(board[position.x][position.y]))
-                return true;
-        }
-
-        return false;
-    }
-
-    bool is_checked_L(const coordinates &origin, const vector<vector<Piece *>> &board) {
-        vector<coordinates> moves = getL_moves(origin, board);
-        if(moves.empty())
-            return false;
-
-        for(auto position: moves) {
-            if(dynamic_cast<Knight *>(board[position.x][position.y]))
-                return true;
-        }
-
-        return false;
     }
 
 };
