@@ -32,6 +32,8 @@ class Rook : public Piece {
 
             if(is_valid_tile(target, board)) {
                 set_default_en_passant();
+                if(!has_moved)
+                    has_moved = true;
                 return true;
             }
 
@@ -54,8 +56,12 @@ class Rook : public Piece {
                 j += step_y;
             }
 
-            if(is_valid_tile(target, board)) 
+            if(is_valid_tile(target, board)) {
+                set_default_en_passant();
+                if(!has_moved)
+                    has_moved = true;
                 return true;
+            }
 
             else {
                 // Testing message. Please remove later
@@ -69,16 +75,31 @@ class Rook : public Piece {
         vector<coordinates> moves;
         vector<coordinates> temp_moves;
 
-        moves = gethorizontal_moves(origin, true, board);
+        moves = gethorizontal_LOS(origin, true, board);
+        if(!moves.empty())
+            if(!is_valid_tile(moves.back(), board))
+                moves.pop_back();
 
-        temp_moves = gethorizontal_moves(origin, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getvertical_LOS(origin, true, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
+        
+        temp_moves = gethorizontal_LOS(origin, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }        
 
-        temp_moves = getvertical_moves(origin, true, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
-
-        temp_moves = getvertical_moves(origin, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getvertical_LOS(origin, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
         
         return moves;
     }

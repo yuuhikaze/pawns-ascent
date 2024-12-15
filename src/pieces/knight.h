@@ -2,6 +2,7 @@
 #define KNIGHT_H
 
 #include "../piece.h"
+#include <algorithm>
 using namespace std;
 
 class Knight : public Piece {
@@ -32,7 +33,16 @@ class Knight : public Piece {
     }
 
     vector<coordinates> getmoves(coordinates origin, const vector<vector<Piece *>> &board) override {
-        return getL_moves(origin, board);
+        vector<coordinates>moves = getL_LOS(origin, board);
+        if(moves.empty())
+            return moves;
+
+    auto it = std::remove_if(moves.begin(), moves.end(), 
+        [&board, this](const coordinates &move) {
+            return !this->is_valid_tile(move, board);
+        });
+        moves.erase(it, moves.end());
+        return moves;
     }
 };
 

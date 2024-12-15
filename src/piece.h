@@ -32,11 +32,22 @@ struct coordinates {
     int y;
 };
 
+namespace std {
+    template <>
+    struct hash<coordinates> {
+        std::size_t operator()(const coordinates& coord) const {
+            return std::hash<int>()(coord.x) ^ (std::hash<int>()(coord.y) << 1);
+        }
+    };
+}
+
 class Piece {
   public:
+    bool has_moved;
+
     Piece(char symbol, bool is_white) {
         this->is_white = is_white;
-
+        has_moved = false;
         if (is_white)
             this->symbol = (char)tolower(symbol);
         else
@@ -50,6 +61,7 @@ class Piece {
 
     char getsymbol() const { return symbol; }
     bool getis_white() const { return is_white; }
+    bool gethas_moved() const {return has_moved;}
 
     // Determines if a piece is currently checked in the target coordinates
     bool is_checked(const coordinates &target, const vector<vector<Piece *>> &board) {
@@ -83,22 +95,22 @@ class Piece {
         
         return false;
     }
+    
+    // Helper function to determine if the target position can be occupied by a piece
+    bool is_valid_tile(coordinates const &target, const vector<vector<Piece *>> &board) const {
+        if(target.x > 7 || target.x < 0 || target.y > 7 || target.y < 0)
+            return false;
+            
+        if (board[target.x][target.y] != nullptr) {
+            if(board[target.x][target.y]->getis_white() == getis_white())
+                return false;
+            else
+                return true;            
+            }
+        return true;
+    }    
 
   protected:
-        // Helper function to determine if the target position can be occupied by a piece
-        bool is_valid_tile(coordinates const &target, const vector<vector<Piece *>> &board) const {
-            if(target.x > 7 || target.x < 0 || target.y > 7 || target.y < 0)
-                return false;
-            
-            if (board[target.x][target.y] != nullptr) {
-                if(board[target.x][target.y]->getis_white() == getis_white())
-                    return false;
-                else
-                    return true;
-                    
-            }
-            return true;
-        }
 
     // Helper function used to calculate the displacement of a given move
     std::vector<int> calc_displacement(const coordinates &origin, coordinates const &target) const {
@@ -107,10 +119,10 @@ class Piece {
         return {delta_x, delta_y};
     }
 
-    // Helper function used to get all possible moves of a specified diagonal from a given origin
+    // Helper function used to get the Line of Sight of a specified diagonal from a given origin
     // For direction_x, true => right, false => left
     // For direction_y, true => up, false => down 
-    vector<coordinates> getdiagonal_moves(const coordinates &origin, const bool direction_x, const bool direction_y, const vector<vector<Piece *>> &board) const {
+    vector<coordinates> getdiagonal_LOS(const coordinates &origin, const bool direction_x, const bool direction_y, const vector<vector<Piece *>> &board) const {
         int step_x = direction_x ? 1 : -1;
         int step_y = direction_y ? 1 : -1;
         
@@ -121,14 +133,13 @@ class Piece {
 
         while (i < 8 && i > -1 && j < 8 && j > -1) {
             if (board[i][j] != nullptr) {
-                if(is_valid_tile(coordinates(i, j), board)) {
+                if(board[i][j] == this)
+                    moves.push_back(coordinates(i, j));
+                else {   
                     moves.push_back(coordinates(i, j));
                     return moves;
-                }  
-                else
-                    return moves;
+                }
             }
-
             moves.push_back(coordinates(i, j));
             i += step_x;
             j += step_y;
@@ -137,9 +148,9 @@ class Piece {
         return moves;
     }
 
-    // Helper function used to get all possible horizontal moves from a given position
+    // Helper function used to get the horizontal Line of Sight from a given position
     // For direction_x, true => right, false => left
-    vector<coordinates> gethorizontal_moves(const coordinates &origin, const bool direction_x, const vector<vector<Piece *>> &board) const {
+    vector<coordinates> gethorizontal_LOS(const coordinates &origin, const bool direction_x, const vector<vector<Piece *>> &board) const {
         int step = direction_x ? 1 : -1;
         int i = origin.x + step;
         
@@ -147,14 +158,13 @@ class Piece {
 
         while (i < 8 && i > -1) {
             if (board[i][origin.y] != nullptr) {
-                if(is_valid_tile(coordinates(i, origin.y), board)) {
+                if(board[i][origin.y] == this)
+                    moves.push_back(coordinates(i, origin.y));
+                else { 
                     moves.push_back(coordinates(i, origin.y));
                     return moves;
                 }
-                else 
-                    return moves;
             }
-
             moves.push_back(coordinates(i, origin.y));
             i += step;
         }
@@ -162,9 +172,9 @@ class Piece {
         return moves;
     }
 
-    // Helper function used to get all possible vertical moves from a given position
+    // Helper function used to get the vertical Line of Sight from a given position
     // For direction_y, true => up, false => down 
-    vector<coordinates> getvertical_moves(const coordinates &origin, const bool direction_y, const vector<vector<Piece *>> &board) const {
+    vector<coordinates> getvertical_LOS(const coordinates &origin, const bool direction_y, const vector<vector<Piece *>> &board) const {
         int step = direction_y ? 1 : -1;
         int j = origin.y + step;
         
@@ -174,10 +184,12 @@ class Piece {
             if (board[origin.x][j] != nullptr) {
                 if(is_valid_tile(coordinates(origin.x, j), board)) {
                     moves.push_back(coordinates(origin.x, j));
-                    break;
+                    return moves;
                 }
+                else if(board[origin.x][j] == this)
+                    moves.push_back(coordinates(origin.x, j));
                 else 
-                    break; 
+                    return moves; 
             }
 
             moves.push_back(coordinates(origin.x, j));
@@ -187,32 +199,32 @@ class Piece {
         return moves;
     }
 
-    // Helper function used to get all possible L moves from a given position
-    vector<coordinates> getL_moves (const coordinates &origin, const vector<vector<Piece *>> &board) const {
+    // Helper function used to get L shaped Line of Sight moves from a given position
+    vector<coordinates> getL_LOS (const coordinates &origin, const vector<vector<Piece *>> &board) const {
         vector<coordinates> moves;
 
-        if(is_valid_tile(coordinates(origin.x + 2, origin.y + 1), board))
+        if(origin.x + 2 < 8 && origin.y + 1 < 8)
             moves.push_back(coordinates(origin.x + 2, origin.y + 1));
         
-        if(is_valid_tile(coordinates(origin.x + 1, origin.y + 2), board))
+        if(origin.x + 1 < 8 && origin.y + 2 < 8)
             moves.push_back(coordinates(origin.x + 1, origin.y + 2));
         
-        if(is_valid_tile(coordinates(origin.x - 1, origin.y + 2), board))
+        if(origin.x - 1 > -1 && origin.y + 2 < 8)
             moves.push_back(coordinates(origin.x - 1, origin.y + 2));
         
-        if(is_valid_tile(coordinates(origin.x - 2, origin.y + 1), board))
+        if(origin.x - 2 > -1 && origin.y + 1 < 8)
             moves.push_back(coordinates(origin.x - 2, origin.y + 1));
         
-        if(is_valid_tile(coordinates(origin.x - 2, origin.y - 1), board))
+        if(origin.x - 2 > -1 && origin.y - 1 > -1)
             moves.push_back(coordinates(origin.x - 2, origin.y - 1));
         
-        if(is_valid_tile(coordinates(origin.x - 1, origin.y - 2), board))
+        if(origin.x - 1 > -1 && origin.y - 2 > -1)
             moves.push_back(coordinates(origin.x - 1, origin.y - 2));
         
-        if(is_valid_tile(coordinates(origin.x + 1, origin.y - 2), board))
+        if(origin.x + 1 < 8 && origin.y - 2 > -1)
             moves.push_back(coordinates(origin.x + 1, origin.y - 2));
         
-        if(is_valid_tile(coordinates(origin.x + 2, origin.y - 1), board))
+        if(origin.x + 2 < 8 && origin.y - 1 > -1)
             moves.push_back(coordinates(origin.x + 2, origin.y - 1));
 
         return moves;
@@ -227,9 +239,10 @@ class Piece {
     }
 
     // Verifies if a type of piece is at at a given position on the board based on the specified symbol
+    // Lowercase => white piece. Uppercase => black piece
     bool check_piece(const char &symbol, const coordinates &position, const vector<vector<Piece *>> &board) const {
         if (board[position.x][position.y] != nullptr) {
-            if(tolower(board[position.x][position.y]->getsymbol()) == (symbol))
+            if(board[position.x][position.y]->getsymbol() == symbol)
                 return true;
         }
         return false;
@@ -239,32 +252,35 @@ class Piece {
     char symbol;
     bool is_white;
 
-    // Checks if a piece
+    // Verifies if a piece is being checked from a given diagonal
     bool is_checked_diagonal(coordinates origin, bool direction_x, bool direction_y, const vector<vector<Piece *>> &board) const {
         int step_x = direction_x ? 1 : -1;
         int step_y = direction_y ? 1 : -1;
 
-        if (origin.x + step_x < 8 && origin.x + step_x > -1 && origin.y + step_y < 8 && origin.y + step_y > -1) {
-            if (board[origin.x + step_x][origin.y + step_y] == this) {
-                origin.x += step_x;
-                origin.y += step_y;
-            }
-        }
-
-        vector<coordinates> moves = getdiagonal_moves(origin, direction_x, direction_y, board);
+        vector<coordinates> moves = getdiagonal_LOS(origin, direction_x, direction_y, board);
         if(moves.empty())
             return false;
+        
+        char bishop = 'b';
+        char queen = 'q';
+        char king = 'k';
+
+        if(getis_white()) {
+            bishop = toupper(bishop);
+            queen = toupper(queen);
+            king = toupper(king);
+        }
 
         coordinates position = moves.back();
-        if(check_piece('b', position, board) || check_piece('q', position, board))
+        if(check_piece(bishop, position, board) || check_piece(queen, position, board))
             return true;
         
         if(moves.size() == 1) {
-            if(check_piece('k', position, board))
+            if(check_piece(king, position, board))
                 return true;
             
             if(getis_white()) {
-                if(direction_y && check_piece('p', position, board))
+                if(direction_y && check_piece('P', position, board))
                     return true;
             }
 
@@ -280,21 +296,26 @@ class Piece {
     bool is_checked_horizontal(coordinates origin, bool direction_x, const vector<vector<Piece *>> &board) const {
         int step_x = direction_x ? 1 : -1;
 
-        if(origin.x + step_x > -1 && origin.x + step_x < 8) {
-            if(board[origin.x + step_x][origin.y] == this)
-                origin.x += step_x;
-        }
-
-        vector<coordinates> moves = gethorizontal_moves(origin, direction_x, board);
+        vector<coordinates> moves = gethorizontal_LOS(origin, direction_x, board);
         if(moves.empty())
             return false;
 
+        char rook = 'r';
+        char queen = 'q';
+        char king = 'k';
+
+        if(getis_white()) {
+            rook = toupper(rook);
+            queen = toupper(queen);
+            king = toupper(king);
+        }
+
         coordinates position = moves.back();
-        if(check_piece('r', position, board) || check_piece('q', position, board))
+        if(check_piece(rook, position, board) || check_piece(queen, position, board))
             return true;
         
         if(moves.size() == 1) {
-            if(check_piece('k', position, board))
+            if(check_piece(king, position, board))
                 return true;
         }
 
@@ -304,21 +325,31 @@ class Piece {
     bool is_checked_vertical(coordinates origin, bool direction_y, const vector<vector<Piece *>> &board) const {
         int step_y = direction_y ? 1 : -1;
 
-        if(origin.y + step_y > -1 && origin.y + step_y < 8) {
-            if(board[origin.x][origin.y + step_y] ==  this)
-            origin.y += step_y;
-        }
+        // if(origin.y + step_y > -1 && origin.y + step_y < 8) {
+        //     if(board[origin.x][origin.y + step_y] ==  this)
+        //     origin.y += step_y;
+        // }
 
-        vector<coordinates> moves = getvertical_moves(origin, direction_y, board);
+        vector<coordinates> moves = getvertical_LOS(origin, direction_y, board);
         if(moves.empty())
             return false;
+        
+        char rook = 'r';
+        char queen = 'q';
+        char king = 'k';
+
+        if(getis_white()) {
+            rook = toupper(rook);
+            queen = toupper(queen);
+            king = toupper(king);
+        }
 
         coordinates position = moves.back();
-        if(check_piece('r', position, board) || check_piece('q', position, board))
+        if(check_piece(rook, position, board) || check_piece(queen, position, board))
             return true;
         
         if(moves.size() == 1) {
-            if(check_piece('k', position, board))
+            if(check_piece(king, position, board))
                 return true;
         }
 
@@ -326,12 +357,16 @@ class Piece {
     }
 
     bool is_checked_L(const coordinates &origin, const vector<vector<Piece *>> &board) {
-        vector<coordinates> moves = getL_moves(origin, board);
+        vector<coordinates> moves = getL_LOS(origin, board);
         if(moves.empty())
             return false;
-
+        
+        char knight = 'n';
+        if(getis_white())
+            knight = toupper(knight);
+        
         for(auto position: moves) {
-            if(check_piece('n', position, board))
+            if(check_piece(knight, position, board))
                 return true;
         }
 

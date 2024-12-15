@@ -3,5 +3,6 @@ packages/
 .vscode/
 src/main.exe
 src/to_do_list.txt
+src/test_positions.txt
 
 

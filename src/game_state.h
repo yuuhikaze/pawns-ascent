@@ -13,10 +13,15 @@ class GameState {
     static coordinates en_passant_capture;
     static coordinates en_passant_target;
 
+    static bool will_castle;
+    static bool is_short_castle;
+
     static coordinates white_king;
     static coordinates black_king;
-    static bool is_white_checked;
-    static bool is_black_checked;
+
+    static bool is_checkmated_white;
+    static bool is_checkmated_black;
+    static bool is_stalemate;
 };
 
 #endif // GAMESTATE_H

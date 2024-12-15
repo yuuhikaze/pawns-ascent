@@ -100,28 +100,59 @@ class Queen : public Piece {
         vector<coordinates> temp_moves;
         vector<coordinates> moves;
 
-        moves = getdiagonal_moves(origin, true, true, board);
+        moves = gethorizontal_LOS(origin, true, board);
+        if(!moves.empty())
+            if(!is_valid_tile(moves.back(), board))
+                moves.pop_back();
 
-        temp_moves = getdiagonal_moves(origin, false, true, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getdiagonal_LOS(origin, true, true, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = getdiagonal_moves(origin, false, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getvertical_LOS(origin, true, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = getdiagonal_moves(origin, true, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getdiagonal_LOS(origin, false, true, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = gethorizontal_moves(origin, true, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = gethorizontal_LOS(origin, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = gethorizontal_moves(origin, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getdiagonal_LOS(origin, false, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = getvertical_moves(origin, true, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getvertical_LOS(origin, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
 
-        temp_moves = getvertical_moves(origin, false, board);
-        moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        temp_moves = getdiagonal_LOS(origin, true, false, board);
+        if(!temp_moves.empty()) {
+            if(!is_valid_tile(temp_moves.back(), board))
+                temp_moves.pop_back();
+            moves.insert(moves.end(), temp_moves.begin(), temp_moves.end());
+        }
         
         return moves;
     }

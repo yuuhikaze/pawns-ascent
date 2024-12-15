@@ -6,7 +6,7 @@ using namespace std;
 
 class Pawn : public Piece {
   public:
-    Pawn(bool is_white) : Piece('p', is_white) { has_moved = false; }
+    Pawn(bool is_white) : Piece('p', is_white) {}
 
     bool is_movement_valid(coordinates origin, coordinates target, const vector<vector<Piece *>> &board) override {
 
@@ -80,16 +80,6 @@ class Pawn : public Piece {
         vector<coordinates> moves;
 
         if(getis_white()) {
-            if(origin.y < 7) {
-                if(board[origin.x][origin.y + 1] == nullptr)
-                    moves.push_back(coordinates(origin.x, origin.y + 1));
-            }
-            
-            if(origin.y < 6) {
-                if(!has_moved && board[origin.x][origin.y + 2] == nullptr)
-                    moves.push_back(coordinates(origin.x, origin.y + 2));
-            }
-
             if(origin.x < 7) {
                 if(board[origin.x + 1][origin.y + 1] != nullptr) {
                     if(board[origin.x + 1][origin.y + 1]->getis_white() != getis_white())
@@ -103,19 +93,19 @@ class Pawn : public Piece {
                         moves.push_back(coordinates(origin.x - 1, origin.y + 1));
                 }
             }
+
+            if(board[origin.x][origin.y + 1] == nullptr)
+                moves.push_back(coordinates(origin.x, origin.y + 1));
+            else
+                return moves;
+            
+            if(origin.y < 6) {
+                if(!has_moved && board[origin.x][origin.y + 2] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y + 2));
+            }
         }
 
         else {
-            if(origin.y > 0) {
-                if(board[origin.x][origin.y - 1] == nullptr)
-                    moves.push_back(coordinates(origin.x, origin.y + 1));
-            }
-            
-            if(origin.y > 1) {
-                if(!has_moved && board[origin.x][origin.y - 2] == nullptr)
-                    moves.push_back(coordinates(origin.x, origin.y + 2));
-            }
-
             if(origin.x < 7) {
                 if(board[origin.x + 1][origin.y - 1] != nullptr) {
                     if(board[origin.x + 1][origin.y - 1]->getis_white() != getis_white())
@@ -129,13 +119,20 @@ class Pawn : public Piece {
                         moves.push_back(coordinates(origin.x - 1, origin.y - 1));
                 }
             }
+
+            if(board[origin.x][origin.y - 1] == nullptr)
+                moves.push_back(coordinates(origin.x, origin.y - 1));
+            else
+                return moves;
+            
+            if(origin.y > 1) {
+                if(!has_moved && board[origin.x][origin.y - 2] == nullptr)
+                    moves.push_back(coordinates(origin.x, origin.y - 2));
+            }
         }
         
         return moves;
     }
-
-  private:
-    bool has_moved;
 };
 
 #endif // PAWN.H

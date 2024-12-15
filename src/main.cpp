@@ -8,6 +8,7 @@ void test_moves(int n, Board &board) {
     string target;
     bool turn = true;
 
+    cout << "\033[2J\033[1;1H";
     cout << "Current turn: ";
     if (turn)
         cout << "White " << endl;
@@ -25,10 +26,13 @@ void test_moves(int n, Board &board) {
         cin >> target;
         cout << endl;
 
+        cout << "\033[2J\033[1;1H";
+        
         if (board.move(origin, target, turn)) {
             turn = !turn;
             i++;
         }
+
         cout << "Current turn: ";
         if (turn)
             cout << "White " << endl;
@@ -42,7 +46,7 @@ void test_moves(int n, Board &board) {
 int main(int argc, char **argv) {
     Board board;
 
-    test_moves(20, board);
+    test_moves(30, board);
 
     board.clear_board();
 
