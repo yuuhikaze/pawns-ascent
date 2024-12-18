@@ -53,20 +53,11 @@ class Board {
         //     add_piece('p', coordinates(column, 1), true);
         // }
 
+        add_piece('k', coordinates(7, 0), true);
+        add_piece('q', coordinates(3, 0), true);
 
-        add_piece('k', coordinates(4, 0), true);
-        add_piece('r', coordinates(2, 0), true);
-        add_piece('b', coordinates(0, 2), true);
-        add_piece('p', coordinates(6, 5), true);
-        
-        add_piece('k', coordinates(6, 7), false);
-        add_piece('p', coordinates(0, 6), false);
-        add_piece('p', coordinates(1, 6), false);
-        add_piece('p', coordinates(5, 6), false);
-        add_piece('p', coordinates(6, 6), false);
-        add_piece('p', coordinates(7, 6), false);
-        add_piece('r', coordinates(0, 5), false);
-        add_piece('n', coordinates(5, 4), false);
+        add_piece('k', coordinates(0, 7), false);
+        add_piece('b', coordinates(0, 2), false);
     }
 
     void display_board() const {
@@ -218,6 +209,7 @@ class Board {
                     check_stalemate(!is_white_turn);
             }
 
+            check_insufficient_material();
             // print_current_pieces();
             return true;
         }
@@ -314,39 +306,45 @@ class Board {
         cout << "\033[2J\033[1;1H";
     }
 
-    void add_piece(const char &symbol, const coordinates &postion, const bool &is_white) {
-        if(board[postion.x][postion.y] != nullptr) {
+    // Creates a piece on the board. Adds that piece to the white/black list of pieces
+    void add_piece(const char &symbol, const coordinates &position, const bool &is_white) {
+        if(board[position.x][position.y] != nullptr) {
             cout << "There is already a piece at that position" << endl;
+            return;
+        }
+
+        if(position.x > 7 || position.x < 0 || position.y > 7 || position.y < 0) {
+            cout << "Out of bounds. Unable to add piece" << endl;
             return;
         }
         
         switch(tolower(symbol)) {
             case 'p':
-                board[postion.x][postion.y] = new Pawn(is_white);
+                board[position.x][position.y] = new Pawn(is_white);
                 break;
 
             case 'b':
-                board[postion.x][postion.y] = new Bishop(is_white);
+                board[position.x][position.y] = new Bishop(is_white);
                 break;
             
             case 'n':
-                board[postion.x][postion.y] = new Knight(is_white);
+                board[position.x][position.y] = new Knight(is_white);
                 break;
             
             case 'r':
-                board[postion.x][postion.y] = new Rook(is_white);
+                board[position.x][position.y] = new Rook(is_white);
                 break;                  
             
             case 'q':
-                board[postion.x][postion.y] = new Queen(is_white);
+                board[position.x][position.y] = new Queen(is_white);
                 break;
 
             case 'k':
-                board[postion.x][postion.y] = new King(is_white);
+                board[position.x][position.y] = new King(is_white);
                 if(is_white)
-                    GameState::white_king = postion;
+                    GameState::white_king = position;
                 else
-                    GameState::black_king = postion;
+                    GameState::black_king = position;
                 return;
             
             default:
@@ -354,9 +352,9 @@ class Board {
         }
 
         if(is_white)
-            white_pieces[postion] = tolower(symbol);
+            white_pieces[position] = tolower(symbol);
         else
-            black_pieces[postion] = toupper(symbol);
+            black_pieces[position] = toupper(symbol);
     }
 
     // AFTER a move on the board is complete, updates the map that keeps track of the pieces
@@ -428,7 +426,7 @@ class Board {
     }
 
     // Attempts to find a legal move for the specified color
-    // Returns true if it finds a legal move. Else, return false
+    // Returns true if it finds a legal move.
     bool find_legal_move(const bool &is_white) {
         if(can_king_move(is_white))
             return true;
@@ -525,32 +523,52 @@ class Board {
         return false;
     }
 
+    // Verifies if the specified color is checkmated. Updates the Game State variable accordingly
     void check_checkmate(const bool &is_white) {
-        cout << "Checking chekmate..." << endl;
         if(!find_legal_move(is_white)) {
             if(is_white) {
-                cout << "Checkmate!" << endl << endl;
                 GameState::is_checkmated_white = true;
                 return;
             }
             else {
-                cout << "Checkmate!" << endl << endl;
                 GameState::is_checkmated_black = true;
                 return;
             }
         }
-        else
-            cout << "No checkmate" << endl << endl;
     }
 
+    // Verifies if the specified color is stalemated. Updates the Game State variable accordingly
     void check_stalemate(const bool &is_white) {
-        cout << "Checking stalemate..." << endl;
         if(!find_legal_move(is_white)) {
-            cout << "Stalemate..." << endl << endl;
             GameState::is_stalemate = true;
         }
-        else
-            cout << "No stalemate" << endl << endl;
+    }
+
+    // Verifies if there is sufficient material to finish the game. Updates the Game State variable accordingly
+    void check_insufficient_material() {
+        int minor_pieces = 0;
+        for(const auto &piece: white_pieces) {
+            if(piece.second == 'p' || piece.second == 'q' || piece.second == 'r')
+                return;
+            if(piece.second == 'n' || piece.second == 'b') {
+                minor_pieces++;
+                if(minor_pieces > 2)
+                    return;
+            }
+        }
+
+        for(const auto &piece: black_pieces) {
+            if(piece.second == 'p' || piece.second == 'q' || piece.second == 'r')
+                return;
+            if(piece.second == 'n' || piece.second == 'b') {
+                minor_pieces++;
+                if(minor_pieces > 2)
+                    return;
+            }
+        }
+
+        if(minor_pieces < 3);
+            GameState::is_insufficient_material = true;
     }
 };
 

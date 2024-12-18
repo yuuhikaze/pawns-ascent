@@ -33,6 +33,9 @@ void test_moves(int n, Board &board) {
             i++;
         }
 
+        if(GameState::is_checkmated_black || GameState::is_checkmated_black || GameState::is_stalemate || GameState::is_insufficient_material)
+            break;
+
         cout << "Current turn: ";
         if (turn)
             cout << "White " << endl;
@@ -40,6 +43,22 @@ void test_moves(int n, Board &board) {
             cout << "Black " << endl;
         
         board.display_board();
+    }
+
+    if(GameState::is_checkmated_black) {
+        cout << "White wins! (I hate my life)" << endl;
+    }
+
+    if(GameState::is_checkmated_white) {
+        cout << "Black wins! (I hate my life)" << endl;
+    }
+
+    if(GameState::is_stalemate) {
+        cout << "Stalemate... It's a tie" << endl;
+    }
+
+    if(GameState::is_insufficient_material) {
+        cout << "Insufficient material... It's a tie";
     }
 }
 

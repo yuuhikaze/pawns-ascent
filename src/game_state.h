@@ -22,6 +22,7 @@ class GameState {
     static bool is_checkmated_white;
     static bool is_checkmated_black;
     static bool is_stalemate;
+    static bool is_insufficient_material;
 };
 
 #endif // GAMESTATE_H

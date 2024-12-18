@@ -16,3 +16,4 @@ coordinates GameState::black_king = coordinates(-1, -1);
 bool GameState::is_checkmated_white = false;
 bool GameState::is_checkmated_black = false;
 bool GameState::is_stalemate = false;
+bool GameState::is_insufficient_material = false;
